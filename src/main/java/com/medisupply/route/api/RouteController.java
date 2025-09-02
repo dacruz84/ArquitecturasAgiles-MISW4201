@@ -52,11 +52,9 @@ public class RouteController {
     // Planificar
     var plan = planner.plan("E", points);
     String routeCsv = String.join(", ", plan.visitOrder());
-
     // Hash
-    String joinedVisit = String.join(">", plan.visitOrder());
-    String costFmt = String.format(Locale.ROOT, "%.6f", plan.cost());
-    String hash = Hashing.sha256("3opt|" + joinedVisit + "|" + costFmt);
+    String hash = Hashing.sha256(routeCsv); 
+
 
     return ResponseEntity.ok(new RouteMultiResponse(
         routeCsv,
