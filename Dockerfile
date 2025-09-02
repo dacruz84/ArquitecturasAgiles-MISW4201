@@ -19,8 +19,7 @@ WORKDIR /app
 COPY --from=builder /workspace/target/route-picking-3opt-mid-0.0.1-SNAPSHOT.jar /app/app.jar
 EXPOSE 8081
 
-# Variables opcionales para identificar instancia y configurar fallo simulado
-# (puedes sobreescribirlas con -e al ejecutar)
+# Variables opcionales para identificar para configurar fallo simulado
 
 ENV RECO_FAILURE_RATE=0.10
 ENV RECO_MAX_PRODUCTS=10
