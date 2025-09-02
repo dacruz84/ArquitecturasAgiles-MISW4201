@@ -1,0 +1,10 @@
+com\medisupply\route\RoutePickingApplication.class
+com\medisupply\route\api\dto\RouteMultiRequest.class
+com\medisupply\route\core\Tsp3OptService.class
+com\medisupply\route\core\MatrixStatic.class
+com\medisupply\route\core\RoutePlannerService.class
+com\medisupply\route\infra\FailureFilter.class
+com\medisupply\route\core\RoutePlannerService$Plan.class
+com\medisupply\route\api\RouteController.class
+com\medisupply\route\api\dto\RouteMultiResponse.class
+com\medisupply\route\util\Hashing.class
