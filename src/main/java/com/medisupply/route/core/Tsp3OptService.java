@@ -8,117 +8,90 @@ import java.util.*;
 @Service
 public class Tsp3OptService {
 
-  @Value("${reco.max-sweeps:200}")
-  private int maxSweeps;
-
-  @Value("${reco.max-improvements:10000}")
+  // Igual que el Python: límite bajo para evitar cuelgues
+  @Value("${reco.max-improvements:100}")
   private int maxImprovements;
 
   public List<String> solveTour(String startEnd, List<String> mustVisit) {
     long t0 = System.nanoTime();
 
-    List<String> sorted = new ArrayList<>(new LinkedHashSet<>(mustVisit));
-    int n = sorted.size() + 2;
+    // 1) Semilla: orden de entrada (preserva orden y quita duplicados)
+    List<String> seq = new ArrayList<>(new LinkedHashSet<>(mustVisit));
+
+    // 2) Construir tour con índices, E al inicio y fin
+    int n = seq.size() + 2;
     int[] tour = new int[n];
     tour[0] = MatrixStatic.idx(startEnd);
-    for (int i=0;i<sorted.size();i++) tour[i+1] = MatrixStatic.idx(sorted.get(i));
-    tour[n-1] = MatrixStatic.idx(startEnd);
+    for (int i = 0; i < seq.size(); i++) tour[i + 1] = MatrixStatic.idx(seq.get(i));
+    tour[n - 1] = MatrixStatic.idx(startEnd);
 
-    int sweeps = 0;
+    double best = routeCost(tour);
     int improvements = 0;
-    boolean changed = true;
-    while (changed && sweeps < maxSweeps && improvements < maxImprovements) {
-      sweeps++;
-      changed = false;
+    boolean improved = true;
 
-      double bestGain = 0;
-      int bi=-1,bj=-1,bk=-1, bestCase=0;
+    // 3) 3-opt "recortado" + FIRST-IMPROVEMENT (como el Python)
+    while (improved && improvements < maxImprovements) {
+      improved = false;
 
-      for (int i=1;i<n-3;i++){
-        int Ai = tour[i-1], Bi = tour[i];
-        for (int j=i+1;j<n-2;j++){
-          int Cj = tour[j], Dj = tour[j+1];
-          for (int k=j+1;k<n-1;k++){
-            int Ek = tour[k], Fk = tour[k+1];
+      outer:
+      for (int i = 1; i < n - 3; i++) {
+        for (int j = i + 1; j < n - 2; j++) {
+          for (int k = j + 1; k < n - 1; k++) {
 
-            double base = d(Ai,Bi) + d(Cj,Dj) + d(Ek,Fk);
+            // Caso 1: invertir [i..j-1]
+            int[] t1 = tour.clone();
+            reverse(t1, i, j - 1);
+            double c1 = routeCost(t1);
+            if (c1 + 1e-12 < best) {
+              tour = t1; best = c1; improvements++; improved = true;
+              break outer; // FIRST-IMPROVEMENT
+            }
 
-            double[] delta = new double[7];
-            delta[1] = (d(Ai,Cj)+d(Bi,Dj)+d(Ek,Fk)) - base;
-            delta[2] = (d(Ai,Bi)+d(Cj,Ek)+d(Dj,Fk)) - base;
-            delta[3] = (d(Ai,Cj)+d(Bi,Ek)+d(Dj,Fk)) - base;
-            delta[4] = (d(Ai,Dj)+d(Ek,Bi)+d(Cj,Fk)) - base;
-            delta[5] = (d(Ai,Dj)+d(Ek,Cj)+d(Bi,Fk)) - base;
-            delta[6] = (d(Ai,Ek)+d(Cj,Bi)+d(Dj,Fk)) - base;
+            // Caso 2: invertir [j..k-1]
+            int[] t2 = tour.clone();
+            reverse(t2, j, k - 1);
+            double c2 = routeCost(t2);
+            if (c2 + 1e-12 < best) {
+              tour = t2; best = c2; improvements++; improved = true;
+              break outer;
+            }
 
-            for (int cs=1; cs<=6; cs++){
-              if (delta[cs] < bestGain - 1e-12 ||
-                  (Math.abs(delta[cs]-bestGain) <= 1e-12 && tie(i,j,k,cs,bi,bj,bk,bestCase))) {
-                bestGain = delta[cs]; bi=i; bj=j; bk=k; bestCase=cs;
-              }
+            // Caso 3: invertir ambos (secuencial)
+            int[] t3 = tour.clone();
+            reverse(t3, i, j - 1);
+            reverse(t3, j, k - 1);
+            double c3 = routeCost(t3);
+            if (c3 + 1e-12 < best) {
+              tour = t3; best = c3; improvements++; improved = true;
+              break outer;
             }
           }
         }
       }
-
-      if (bestGain < -1e-12) {
-        applyCase(tour, bi, bj, bk, bestCase);
-        improvements++;
-        changed = true;
-      }
     }
 
     long t1 = System.nanoTime();
-    System.out.printf(Locale.ROOT, "3opt: n=%d, sweeps=%d, improvements=%d, time=%.3f ms%n",
-        n, sweeps, improvements, (t1 - t0)/1e6);
+    System.out.printf(
+        Locale.ROOT,
+        "3opt(first-impr,3-casos): n=%d, improvements=%d, time=%.3f ms, cost=%.3f%n",
+        n, improvements, (t1 - t0) / 1e6, best
+    );
 
+    // 4) Devolver nombres
     List<String> out = new ArrayList<>(n);
     for (int v : tour) out.add(MatrixStatic.NODES.get(v));
     return out;
   }
 
-  private double d(int a, int b) { return MatrixStatic.d(a,b); }
-
-  private boolean tie(int i,int j,int k,int cs,int bi,int bj,int bk,int bc){
-    String s1 = i+":"+j+":"+k+":"+cs, s2 = bi+":"+bj+":"+bk+":"+bc;
-    return s1.compareTo(s2) < 0;
+  /** Suma de distancias consecutivas del tour */
+  private double routeCost(int[] t) {
+    double s = 0.0;
+    for (int i = 0; i < t.length - 1; i++) s += MatrixStatic.d(t[i], t[i + 1]);
+    return s;
   }
 
-  private void applyCase(int[] t,int i,int j,int k,int cs){
-    switch (cs){
-      case 1 -> reverse(t,i,j-1);
-      case 2 -> reverse(t,j,k-1);
-      case 3 -> { reverse(t,i,j-1); reverse(t,j,k-1); }
-      case 4 -> reconcat(t,i,j,k,true,true);
-      case 5 -> reconcatSwap(t,i,j,k);
-      case 6 -> reconcat(t,i,j,k,true,false);
-    }
-  }
-
-  /** ÚNICA implementación de reverse para cualquier array int[] */
-  private void reverse(int[] t,int a,int b){ while(a<b){ int tmp=t[a]; t[a]=t[b]; t[b]=tmp; a++; b--; } }
-
-  private void reconcat(int[] t,int i,int j,int k,boolean rev1,boolean rev2){
-    int[] s1 = Arrays.copyOfRange(t,i,j);
-    int[] s2 = Arrays.copyOfRange(t,j,k);
-    if (rev1) reverse(s1,0,s1.length-1);
-    if (rev2) reverse(s2,0,s2.length-1);
-    splice(t,i,k,concat(s1,s2));
-  }
-  private void reconcatSwap(int[] t,int i,int j,int k){
-    int[] s1 = Arrays.copyOfRange(t,i,j);
-    int[] s2 = Arrays.copyOfRange(t,j,k);
-    splice(t,i,k,concat(s2,s1));
-  }
-  private int[] concat(int[] a,int[] b){
-    int[] r = Arrays.copyOf(a, a.length + b.length);
-    System.arraycopy(b, 0, r, a.length, b.length);
-    return r;
-  }
-  private void splice(int[] t,int from,int to,int[] with){
-    int len = to - from;
-    if (with.length != len) throw new IllegalStateException("splice len mismatch");
-    for (int x=0;x<len;x++) t[from + x] = with[x];
+  /** Invierte el segmento inclusivo [a..b] */
+  private void reverse(int[] t, int a, int b) {
+    while (a < b) { int x = t[a]; t[a] = t[b]; t[b] = x; a++; b--; }
   }
 }
-

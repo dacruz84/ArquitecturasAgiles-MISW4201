@@ -3,7 +3,6 @@ package com.medisupply.route.api;
 import com.medisupply.route.api.dto.RouteMultiRequest;
 import com.medisupply.route.api.dto.RouteMultiResponse;
 import com.medisupply.route.core.RoutePlannerService;
-import com.medisupply.route.util.Hashing;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -51,15 +50,10 @@ public class RouteController {
 
     // Planificar
     var plan = planner.plan("E", points);
-    String routeCsv = String.join(", ", plan.visitOrder());
-    // Hash
-    String hash = Hashing.sha256(routeCsv); 
-
+    String routeCsv = String.join(",", plan.visitOrder());
 
     return ResponseEntity.ok(new RouteMultiResponse(
-        routeCsv,
-        plan.cost(),
-        hash
+        routeCsv
     ));
   }
 }
