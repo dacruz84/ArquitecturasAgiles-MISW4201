@@ -1,175 +1,202 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import random
 import time
-import math
 
 app = Flask(__name__)
-CORS(app)
+CORS(app)  # Para permitir requests desde otros dominios
 
-# Matriz de distancias basada en coordenadas de bodega
-# E = entrada, P1-P20 = productos en diferentes ubicaciones
-WAREHOUSE_COORDS = {
-    "E": (0, 0),      # Entrada/salida
-    "P1": (1, 1), "P2": (2, 1), "P3": (3, 1), "P4": (4, 1), "P5": (5, 1),
-    "P6": (1, 2), "P7": (2, 2), "P8": (3, 2), "P9": (4, 2), "P10": (5, 2),
-    "P11": (1, 3), "P12": (2, 3), "P13": (3, 3), "P14": (4, 3), "P15": (5, 3),
-    "P16": (1, 4), "P17": (2, 4), "P18": (3, 4), "P19": (4, 4), "P20": (5, 4)
-}
+# Configuracion de la bodega - Matriz de distancias
+# E = entrada, P1 a P18 = productos en la bodega
+NODOS_BODEGA = ["E","P1","P2","P3","P4","P5","P6","P7","P8","P9","P10","P11","P12","P13","P14","P15","P16","P17","P18"]
 
-def calculate_distance(product1, product2):
-    """Calcula distancia euclidiana real entre dos productos"""
-    if product1 not in WAREHOUSE_COORDS or product2 not in WAREHOUSE_COORDS:
-        return 999.0  # Distancia muy alta para productos no válidos
+# Matriz de distancias
+MATRIZ_DISTANCIAS = [
+    [0,1,2,3,4,3,2,3,4,5,6,5,4,5,6,7,8,7,6],   # E
+    [1,0,1,2,3,2,1,2,3,4,5,4,3,4,5,6,7,6,5],   # P1
+    [2,1,0,1,2,1,2,3,2,3,4,3,4,5,6,5,6,7,6],   # P2
+    [3,2,1,0,1,2,3,4,3,2,3,4,5,6,5,6,7,6,5],   # P3
+    [4,3,2,1,0,1,2,3,4,3,2,3,4,5,4,5,6,5,4],   # P4
+    [3,2,1,2,1,0,1,2,3,2,3,4,3,4,5,6,5,6,5],   # P5
+    [2,1,2,3,2,1,0,1,2,3,4,3,3,4,5,6,6,5,4],   # P6
+    [3,2,3,4,3,2,1,0,1,2,3,2,1,2,3,4,5,4,3],   # P7
+    [4,3,2,3,4,3,2,1,0,1,2,3,2,3,2,3,4,3,2],   # P8
+    [5,4,3,2,3,2,3,2,1,0,1,2,3,4,3,2,3,4,3],   # P9
+    [6,5,4,3,2,3,4,3,2,1,0,1,2,3,2,1,2,3,4],   # P10
+    [5,4,3,4,3,4,3,2,3,2,1,0,1,2,3,2,1,2,3],   # P11
+    [4,3,4,5,4,3,3,1,2,3,2,1,0,1,2,3,2,1,2],   # P12
+    [5,4,5,6,5,4,4,2,3,4,3,2,1,0,1,2,3,2,1],   # P13
+    [6,5,6,5,4,5,5,3,2,3,2,3,2,1,0,1,2,3,2],   # P14
+    [7,6,5,6,5,6,6,4,3,2,1,2,3,2,1,0,1,2,1],   # P15
+    [8,7,6,7,6,5,6,5,4,3,2,1,2,3,2,1,0,1,2],   # P16
+    [7,6,7,6,5,6,5,4,3,4,3,2,1,2,3,2,1,0,1],   # P17
+    [6,5,6,5,4,5,4,3,2,3,4,3,2,1,2,1,2,1,0]    # P18
+]
 
-    x1, y1 = WAREHOUSE_COORDS[product1]
-    x2, y2 = WAREHOUSE_COORDS[product2]
+# Diccionario para encontrar el índice de cada nodo en la matriz
+INDICE_NODOS = {}
+for i, nodo in enumerate(NODOS_BODEGA):
+    INDICE_NODOS[nodo] = i
 
-    return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
+def calcular_distancia(producto1, producto2):
+    #Calcula la distancia entre dos productos usando la matriz
+    # Verificar que los productos existan
+    if producto1 not in INDICE_NODOS:
+        return 999.0  # distancia muy grande si no existe
+    if producto2 not in INDICE_NODOS:
+        return 999.0
 
-def calculate_tour_distance(tour):
-    """Calcula distancia total de una ruta"""
-    total_distance = 0.0
-    for i in range(len(tour) - 1):
-        total_distance += calculate_distance(tour[i], tour[i + 1])
-    return total_distance
+    idx1 = INDICE_NODOS[producto1]
+    idx2 = INDICE_NODOS[producto2]
 
-def reverse_segment(tour, start, end):
-    """Invierte un segmento de la ruta"""
-    new_tour = tour.copy()
-    new_tour[start:end+1] = reversed(new_tour[start:end+1])
-    return new_tour
+    # Buscar en la matriz
+    distancia = MATRIZ_DISTANCIAS[idx1][idx2]
+    return distancia
 
-def three_opt_improve(tour):
-    """
-    Implementación del algoritmo 3-opt
-    Basado en la lógica del proyecto Java
-    """
-    best_tour = tour.copy()
-    best_distance = calculate_tour_distance(best_tour)
+def calcular_distancia_ruta(ruta):
+    #Suma todas las distancias de la ruta completa
+    distancia_total = 0.0
+    # Sumar distancia entre cada par de nodos consecutivos
+    for i in range(len(ruta) - 1):
+        nodo_actual = ruta[i]
+        nodo_siguiente = ruta[i + 1]
+        distancia_total += calcular_distancia(nodo_actual, nodo_siguiente)
+    return distancia_total
 
-    n = len(tour)
-    max_improvements = 100
-    improvements = 0
+def invertir_segmento(ruta, inicio, fin):
+    #Invierte una parte de la ruta - para el 3-opt
+    nueva_ruta = ruta.copy()
+    nueva_ruta[inicio:fin+1] = reversed(nueva_ruta[inicio:fin+1])
+    return nueva_ruta
 
-    improved = True
-    while improved and improvements < max_improvements:
-        improved = False
+def mejorar_con_3opt(ruta):
 
-        # Revisar todas las combinaciones posibles de 3 segmentos
+    #Algoritmo 3-opt para optimizar la ruta
+    mejor_ruta = ruta.copy()
+    mejor_distancia = calcular_distancia_ruta(mejor_ruta)
+
+    n = len(ruta)
+    max_mejoras = 100  # límite para que no se cuelgue el algoritmo
+    mejoras = 0
+    
+    sigue_mejorando = True
+    while sigue_mejorando and mejoras < max_mejoras:
+        sigue_mejorando = False
+
+        # Probar todas las combinaciones de 3 segmentos
         for i in range(1, n - 3):
             for j in range(i + 1, n - 2):
                 for k in range(j + 1, n - 1):
 
-                    # Caso 1: Reversear segmento i->j-1
-                    new_tour = reverse_segment(tour, i, j-1)
-                    new_distance = calculate_tour_distance(new_tour)
+                    # Caso 1: Invertir primer segmento
+                    nueva_ruta = invertir_segmento(ruta, i, j-1)
+                    nueva_distancia = calcular_distancia_ruta(nueva_ruta)
 
-                    if new_distance < best_distance:
-                        best_tour = new_tour
-                        best_distance = new_distance
-                        improved = True
-                        improvements += 1
+                    if nueva_distancia < mejor_distancia:
+                        mejor_ruta = nueva_ruta
+                        mejor_distancia = nueva_distancia
+                        sigue_mejorando = True
+                        mejoras += 1
                         break
 
-                    # Caso 2: Reversear segmento j->k-1
-                    new_tour = reverse_segment(tour, j, k-1)
-                    new_distance = calculate_tour_distance(new_tour)
+                    # Caso 2: Invertir segundo segmento
+                    nueva_ruta = invertir_segmento(ruta, j, k-1)
+                    nueva_distancia = calcular_distancia_ruta(nueva_ruta)
 
-                    if new_distance < best_distance:
-                        best_tour = new_tour
-                        best_distance = new_distance
-                        improved = True
-                        improvements += 1
+                    if nueva_distancia < mejor_distancia:
+                        mejor_ruta = nueva_ruta
+                        mejor_distancia = nueva_distancia
+                        sigue_mejorando = True
+                        mejoras += 1
                         break
 
-                    # Caso 3: Reversear ambos segmentos
-                    new_tour = reverse_segment(tour, i, j-1)
-                    new_tour = reverse_segment(new_tour, j, k-1)
-                    new_distance = calculate_tour_distance(new_tour)
+                    # Caso 3: Invertir ambos segmentos
+                    nueva_ruta = invertir_segmento(ruta, i, j-1)
+                    nueva_ruta = invertir_segmento(nueva_ruta, j, k-1)
+                    nueva_distancia = calcular_distancia_ruta(nueva_ruta)
 
-                    if new_distance < best_distance:
-                        best_tour = new_tour
-                        best_distance = new_distance
-                        improved = True
-                        improvements += 1
+                    if nueva_distancia < mejor_distancia:
+                        mejor_ruta = nueva_ruta
+                        mejor_distancia = nueva_distancia
+                        sigue_mejorando = True
+                        mejoras += 1
                         break
 
-                if improved:
+                if sigue_mejorando:
                     break
-            if improved:
+            if sigue_mejorando:
                 break
 
-        tour = best_tour.copy()
+        ruta = mejor_ruta.copy()
 
-    print(f"3-opt: improvements={improvements}, final_distance={best_distance:.2f}")
-    return best_tour
+    #cuántas mejoras hizo
+    if mejoras > 0:
+        print(f"3-opt mejoró {mejoras} veces, distancia final: {mejor_distancia}")
+    return mejor_ruta
 
-def optimize_route_3opt(products):
-    """
-    Optimiza la ruta usando algoritmo 3-opt real
-    """
-    # Crear ruta completa: E -> productos -> E
-    tour = ["E"] + products + ["E"]
+def optimizar_ruta_3opt(productos):
+    
+    #Función principal que optimiza la ruta con 3-opt
+    # Armar la ruta completa: E -> productos -> E
+    ruta_completa = ["E"] + productos + ["E"]
 
-    # Aplicar 3-opt para optimizar
-    optimized_tour = three_opt_improve(tour)
+    # Aplicar el algoritmo 3-opt
+    ruta_optimizada = mejorar_con_3opt(ruta_completa)
 
-    # Remover puntos de entrada/salida para la respuesta
-    # (solo devolver el orden de los productos)
-    return optimized_tour[1:-1]  # Quitar E inicial y final
+    # Devolver la ruta completa (con E al principio y al final)
+    return ruta_optimizada
 
-@app.route('/health', methods=['GET'])
-def health_check():
-    """Endpoint de salud"""
+@app.route('/up', methods=['GET'])
+def estado_servicio():
     return jsonify({
         "status": "OK",
-        "service": "Logistica-L2",
-        "technology": "Python-Flask",
-        "algorithm": "3-opt Real"
+        "servicio": "Logistica-L2",
+        "tecnologia": "Python-Flask",
+        "algoritmo": "3-opt"
     })
 
-@app.route('/calculate-route', methods=['POST'])
-def calculate_route():
-    """Endpoint principal para calcular ruta óptima con 3-opt"""
+@app.route('/logistic/route', methods=['POST'])
+def calcular_ruta():
+    #Endpoint que calcula la ruta óptima
     try:
-        start_time = time.time()
+        # Obtener los datos del request
+        datos = request.get_json()
 
-        # Obtener datos de entrada
-        data = request.get_json()
+        if not datos or 'items' not in datos:
+            return jsonify({"error": "Falta el campo 'items'"}), 400
 
-        if not data or 'items' not in data:
-            return jsonify({"error": "Missing 'items' field"}), 400
+        items_str = datos['items']
+        productos = []
+        for item in items_str.split(','):
+            producto_limpio = item.strip()
+            if producto_limpio:  # solo agregar si no está vacío
+                productos.append(producto_limpio)
 
-        # Parsear lista de productos
-        items_str = data['items']
-        products = [item.strip() for item in items_str.split(',')]
+        # Validaciones
+        if len(productos) > 10:
+            return jsonify({"error": "Máximo 10 productos permitidos"}), 400
 
-        # Validar productos
-        if len(products) > 10:
-            return jsonify({"error": "Maximum 10 products allowed"}), 400
+        # Verificar que todos los productos existan en la bodega
+        productos_invalidos = []
+        for producto in productos:
+            if producto not in NODOS_BODEGA:
+                productos_invalidos.append(producto)
+        
+        if productos_invalidos:
+            return jsonify({"error": f"Productos no encontrados: {productos_invalidos}"}), 400
 
-        # Validar que todos los productos existen en el warehouse
-        for product in products:
-            if product not in WAREHOUSE_COORDS:
-                return jsonify({"error": f"Product {product} not found in warehouse"}), 400
+        # Calcular ruta óptima
+        ruta_optimizada = optimizar_ruta_3opt(productos)
 
-        # Calcular ruta óptima usando algoritmo 3-opt REAL
-        optimized_products = optimize_route_3opt(products)
-
-        end_time = time.time()
-        processing_time = round(end_time - start_time, 3)
+        # Formato respuesta
+        ruta_string = ",".join(ruta_optimizada)
 
         return jsonify({
-            "optimizedRoute": ",".join(optimized_products),
-            "originalItems": items_str,
-            "processingTime": f"{processing_time}s",
-            "algorithm": "3-opt",
-            "totalProducts": len(products)
+            "route": ruta_string
         })
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    print("Iniciando servidor L2 en puerto 8082...")
+    app.run(debug=True, host='0.0.0.0', port=8082)
