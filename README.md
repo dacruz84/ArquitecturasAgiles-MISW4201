@@ -111,8 +111,3 @@ Según acuerdos del equipo para el experimento Voting:
 - Flask-CORS 6.0.1
 - Docker
 
-## Notas de Desarrollo
-
-- Los warnings de imports en VS Code son normales si no detecta el entorno virtual
-- Para resolverlos: reinicia VS Code o selecciona el intérprete correcto (Ctrl+Shift+P → "Python: Select Interpreter")
-- El código funciona correctamente independientemente de estos warnings
