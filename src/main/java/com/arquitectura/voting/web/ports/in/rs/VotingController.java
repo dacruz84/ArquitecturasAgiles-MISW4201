@@ -56,6 +56,6 @@ public class VotingController {
         }
 
         return votingService.processVote(request.getItems())
-                .map(ResponseEntity::ok);
+                .map(result -> ResponseEntity.status(200).body(result));
     }
 }

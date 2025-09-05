@@ -1,6 +1,9 @@
-// src/main/java/com/arquitectura/voting/service/VotingService.java
 package com.arquitectura.voting.service;
 
+import com.arquitectura.voting.web.ports.out.response.VotingResponse;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -12,8 +15,12 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@Slf4j
 @Service
 public class VotingService {
+
+    // Add ObjectMapper as a field
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     private final WebClient webClient;
     private final String service1Url;
@@ -32,7 +39,7 @@ public class VotingService {
         this.service3Url = service3Url;
     }
 
-    public Mono<String> processVote(String items) {
+    public Mono<VotingResponse> processVote(String items) {
         Flux<String> responses = Flux.merge(
                 callService(service1Url, items),
                 callService(service2Url, items),
@@ -43,11 +50,24 @@ public class VotingService {
         AtomicBoolean decided = new AtomicBoolean(false);
 
         return responses
-                .filter(response -> !decided.get())
-                .flatMap(response -> {
-                    int count = counts.merge(response, 1, Integer::sum);
+                .map(response -> {
+                    try {
+                        JsonNode node = objectMapper.readTree(response);
+                        return node.get("route").asText();
+                    } catch (Exception e) {
+                        log.error("Error parsing response: {}", response, e);
+                        return "error";
+                    }
+                })
+                .filter(route -> !decided.get())
+                .flatMap(route -> {
+                    int count = counts.merge(route, 1, Integer::sum);
+
                     if (count >= 2 && decided.compareAndSet(false, true)) {
-                        return Mono.just(response);
+                        log.info("Llegamos al quórum con la respuesta: {}", route);
+                        VotingResponse votingResponse = new VotingResponse();
+                        votingResponse.setRoute(route);
+                        return Mono.just(votingResponse);
                     }
                     return Mono.empty();
                 })
@@ -60,6 +80,6 @@ public class VotingService {
                 .body(BodyInserters.fromValue(Map.of("items", items)))
                 .retrieve()
                 .bodyToMono(String.class)
-                .onErrorResume(e -> Mono.just("error")); // Handle errors as needed
+                .onErrorResume(e -> Mono.just("error"));
     }
 }
