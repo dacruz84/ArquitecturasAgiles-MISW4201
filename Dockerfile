@@ -25,6 +25,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copiar el código de la aplicación
 COPY app.py .
+COPY config.py .
 
 # Cambiar al usuario no-root
 USER appuser

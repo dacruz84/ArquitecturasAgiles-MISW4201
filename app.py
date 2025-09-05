@@ -243,8 +243,8 @@ def calcular_ruta():
                 productos.append(producto_limpio)
 
         # Validaciones
-        if len(productos) > 10:
-            return jsonify({"error": "Máximo 10 productos permitidos"}), 400
+        if len(productos) > app.config['RECO_MAX_PRODUCTS']:
+            return jsonify({"error": f"Máximo {app.config['RECO_MAX_PRODUCTS']} productos permitidos"}), 400
 
         # Verificar que todos los productos existan en la bodega
         productos_invalidos = []

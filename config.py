@@ -20,5 +20,5 @@ class Config:
     }
     
     # Configuracion del algoritmo
-    RECO_MAX_PRODUCTS = int(os.getenv('RECO_MAX_PRODUCTS', 18))
+    RECO_MAX_PRODUCTS = int(os.getenv('RECO_MAX_PRODUCTS', 10))
     RECO_MAX_IMPROVEMENTS = int(os.getenv('RECO_MAX_IMPROVEMENTS', 1000))
