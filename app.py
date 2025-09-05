@@ -1,9 +1,30 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import time
+from datetime import datetime
+from config import Config
+
+# Observabilidad estándar (como L3)
+from prometheus_flask_exporter import PrometheusMetrics
 
 app = Flask(__name__)
-CORS(app)  # Para permitir requests desde otros dominios
+CORS(app)
+
+# Cargar configuracion manualmente
+config = Config()
+app.config['SERVER_PORT'] = config.SERVER_PORT
+app.config['SERVER_HOST'] = config.SERVER_HOST
+app.config['RECO_MAX_PRODUCTS'] = config.RECO_MAX_PRODUCTS
+
+# Configurar metricas automaticas como L3
+metrics = PrometheusMetrics(app)
+metrics.info('logistica_l2_info', 'Informacion de L2', 
+             version='1.0.0', 
+             technology='Python-Flask',
+             algorithm='3-opt')
+
+# Tiempo de inicio del servicio
+inicio_servicio = datetime.now()
 
 # Configuracion de la bodega - Matriz de distancias
 # E = entrada, P1 a P18 = productos en la bodega
@@ -145,14 +166,64 @@ def optimizar_ruta_3opt(productos):
     # Devolver la ruta completa (con E al principio y al final)
     return ruta_optimizada
 
-@app.route('/up', methods=['GET'])
-def estado_servicio():
+# Endpoints estándar como L3 (/actuator/*)
+
+@app.route('/actuator/health', methods=['GET'])
+def actuator_health():
+    #Health endpoint estándar como Spring Boot Actuator
+    try:
+        # Verificaciones basicas como L3
+        matriz_ok = len(MATRIZ_DISTANCIAS) == 19
+        
+        # Prueba rapida del algoritmo
+        try:
+            ruta_test = optimizar_ruta_3opt(["P1", "P2"])
+            algoritmo_ok = len(ruta_test) >= 4  # E,P1,P2,E
+        except:
+            algoritmo_ok = False
+        
+        status = "UP" if matriz_ok and algoritmo_ok else "DOWN"
+        
+        return jsonify({
+            "status": status,
+            "components": {
+                "matriz": {"status": "UP" if matriz_ok else "DOWN"},
+                "algoritmo": {"status": "UP" if algoritmo_ok else "DOWN"}
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({
+            "status": "DOWN",
+            "components": {
+                "error": {"status": "DOWN", "details": str(e)}
+            }
+        }), 503
+
+@app.route('/actuator/info', methods=['GET'])
+def actuator_info():
+    #Info endpoint como Spring Boot Actuator
+    tiempo_activo = datetime.now() - inicio_servicio
+    
     return jsonify({
-        "status": "OK",
-        "servicio": "Logistica-L2",
-        "tecnologia": "Python-Flask",
-        "algoritmo": "3-opt"
+        "app": {
+            "name": "logistica-l2",
+            "description": "Servicio de calculo de rutas con algoritmo 3-opt",
+            "version": "1.0.0",
+            "technology": "Python-Flask"
+        },
+        "build": {
+            "algorithm": "3-opt",
+            "max_products": app.config['RECO_MAX_PRODUCTS'],
+            "uptime_seconds": int(tiempo_activo.total_seconds())
+        }
     })
+
+# Mantener /up para compatibilidad con Docker Compose
+@app.route('/up', methods=['GET'])
+def health_simple():
+    #Endpoint simple para Docker healthcheck
+    return jsonify({"status": "OK"})
 
 @app.route('/logistic/route', methods=['POST'])
 def calcular_ruta():
@@ -189,6 +260,8 @@ def calcular_ruta():
 
         # Formato respuesta
         ruta_string = ",".join(ruta_optimizada)
+        
+        # Las metricas se manejan automaticamente por prometheus-flask-exporter
 
         return jsonify({
             "route": ruta_string
@@ -198,5 +271,14 @@ def calcular_ruta():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    print("Iniciando servidor L2 en puerto 8082...")
-    app.run(debug=True, host='0.0.0.0', port=8082)
+    print("Iniciando servidor L2...")
+    print(f"Puerto: {app.config['SERVER_PORT']}")
+    print("Endpoints disponibles:")
+    print("- GET /actuator/health")
+    print("- GET /actuator/info") 
+    print("- GET /metrics (prometheus)")
+    print("- GET /up (docker)")
+    print("- POST /logistic/route")
+    app.run(debug=True, 
+            host=app.config['SERVER_HOST'], 
+            port=app.config['SERVER_PORT'])

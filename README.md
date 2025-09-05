@@ -61,7 +61,24 @@ curl http://localhost:8082/up
 
 ## Pruebas y Validación
 
-### Health Check
+### Endpoints de Observabilidad
+
+#### Health Check
+```bash
+curl http://localhost:8082/actuator/health
+```
+
+#### Info del Servicio
+```bash
+curl http://localhost:8082/actuator/info
+```
+
+#### Metricas Prometheus
+```bash
+curl http://localhost:8082/metrics
+```
+
+#### Health Check Simple (Docker)
 ```bash
 curl http://localhost:8082/up
 ```
