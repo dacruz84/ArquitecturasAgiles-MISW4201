@@ -14,7 +14,7 @@ CORS(app)
 config = Config()
 app.config['SERVER_PORT'] = config.SERVER_PORT
 app.config['SERVER_HOST'] = config.SERVER_HOST
-app.config['RECO_MAX_PRODUCTS'] = config.RECO_MAX_PRODUCTS
+#app.config['RECO_MAX_PRODUCTS'] = config.RECO_MAX_PRODUCTS
 
 # Configurar metricas automaticas como L3
 metrics = PrometheusMetrics(app)
@@ -214,7 +214,7 @@ def actuator_info():
         },
         "build": {
             "algorithm": "3-opt",
-            "max_products": app.config['RECO_MAX_PRODUCTS'],
+            #"max_products": app.config['RECO_MAX_PRODUCTS'],
             "uptime_seconds": int(tiempo_activo.total_seconds())
         }
     })
@@ -243,8 +243,8 @@ def calcular_ruta():
                 productos.append(producto_limpio)
 
         # Validaciones
-        if len(productos) > app.config['RECO_MAX_PRODUCTS']:
-            return jsonify({"error": f"Máximo {app.config['RECO_MAX_PRODUCTS']} productos permitidos"}), 400
+        #if len(productos) > app.config['RECO_MAX_PRODUCTS']:
+            #return jsonify({"error": f"Máximo {app.config['RECO_MAX_PRODUCTS']} productos permitidos"}), 400
 
         # Verificar que todos los productos existan en la bodega
         productos_invalidos = []
