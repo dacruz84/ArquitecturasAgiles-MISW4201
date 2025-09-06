@@ -279,6 +279,6 @@ if __name__ == '__main__':
     print("- GET /metrics (prometheus)")
     print("- GET /up (docker)")
     print("- POST /logistic/route")
-    app.run(debug=True, 
+    app.run(debug=False, 
             host=app.config['SERVER_HOST'], 
             port=app.config['SERVER_PORT'])
