@@ -26,7 +26,7 @@ set :port, ENV.fetch("PORT", 3001)
 # Healthcheck
 get "/health" do
   content_type :json
-  { status: "ok" }.to_json
+  { status: "UP" }.to_json
 end
 
 # Endpoint /route 

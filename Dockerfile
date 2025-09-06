@@ -2,7 +2,7 @@ FROM ruby:3.2-alpine
 WORKDIR /app
 
 # Dependencias mínimas para compilar gemas
-RUN apk add --no-cache build-base linux-headers
+RUN apk add --no-cache build-base linux-headers curl
 
 # Copiar Gemfile primero para cache
 COPY Gemfile .
