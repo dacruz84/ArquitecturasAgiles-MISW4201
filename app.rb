@@ -8,7 +8,7 @@ require_relative "./rails_stub"
 # 2) Asegurar que Ruby pueda encontrar /services
 $LOAD_PATH << File.expand_path("services", __dir__)
 
-# 3) Requerir tus clases (¡sin modificarlas!)
+# 3) clases
 require "logistics/route_planner"
 require "logistics/three_opt"
 
@@ -23,7 +23,7 @@ get "/health" do
   { status: "ok" }.to_json
 end
 
-# Endpoint /route que usa tus servicios tal cual
+# Endpoint /route 
 # Acepta: ?items=P1,P3,P4  ó body JSON { "items": ["P1","P3","P4"] }
 post "/route" do
   content_type :json
