@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
 
 @RestController
@@ -16,6 +17,7 @@ import java.util.regex.Pattern;
 public class RouteController {
   private final RoutePlannerService planner;
   private final int maxProducts;
+  private final double rate = 0.10;
 
   private static final Pattern CSV_SPLIT = Pattern.compile("\\s*,\\s*");
 
@@ -29,9 +31,12 @@ public class RouteController {
 
   @PostMapping("/optimal-order")
   public ResponseEntity<?> optimal(@RequestBody RouteMultiRequest req){
-    if (req.items() == null || req.items().isBlank()) {
-      return ResponseEntity.badRequest().body(Map.of("error","Campo 'items' vacío"));
-    }
+
+    if (ThreadLocalRandom.current().nextDouble() < rate) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Simulated failure"));
+    }     
 
     // Parsear CSV -> lista de puntos
     String[] tokens = CSV_SPLIT.split(req.items().trim());
