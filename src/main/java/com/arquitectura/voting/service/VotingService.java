@@ -1,5 +1,6 @@
 package com.arquitectura.voting.service;
 
+import com.arquitectura.voting.exception.QuorumNotReachedException;
 import com.arquitectura.voting.web.ports.out.response.VotingResponse;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,28 +51,30 @@ public class VotingService {
         AtomicBoolean decided = new AtomicBoolean(false);
 
         return responses
-                .map(response -> {
-                    try {
-                        JsonNode node = objectMapper.readTree(response);
-                        return node.get("route").asText();
-                    } catch (Exception e) {
-                        log.error("Error parsing response: {}", response, e);
-                        return "error";
-                    }
-                })
-                .filter(route -> !decided.get())
-                .flatMap(route -> {
-                    int count = counts.merge(route, 1, Integer::sum);
+            .map(response -> {
+                try {
+                    JsonNode node = objectMapper.readTree(response);
+                    return node.get("route").asText();
+                } catch (Exception e) {
+                    log.error("Error parsing response: {}", response, e);
+                    return "error";
+                }
+            })
+            .filter(route -> !route.equals("error")) // Ignore error responses
+            .filter(route -> !decided.get())
+            .flatMap(route -> {
+                int count = counts.merge(route, 1, Integer::sum);
 
-                    if (count >= 2 && decided.compareAndSet(false, true)) {
-                        log.info("Llegamos al quórum con la respuesta: {}", route);
-                        VotingResponse votingResponse = new VotingResponse();
-                        votingResponse.setRoute(route);
-                        return Mono.just(votingResponse);
-                    }
-                    return Mono.empty();
-                })
-                .next();
+                if (count >= 2 && decided.compareAndSet(false, true)) {
+                    log.info("Llegamos al quórum con la respuesta: {}", route);
+                    VotingResponse votingResponse = new VotingResponse();
+                    votingResponse.setRoute(route);
+                    return Mono.just(votingResponse);
+                }
+                return Mono.empty();
+            })
+            .next()
+            .switchIfEmpty(Mono.error(new QuorumNotReachedException("No se alcanzó el quórum")));
     }
 
     private Mono<String> callService(String url, String items) {
