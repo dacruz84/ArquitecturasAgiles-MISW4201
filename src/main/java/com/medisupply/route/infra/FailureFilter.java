@@ -22,7 +22,8 @@ public class FailureFilter extends OncePerRequestFilter {
       if (ThreadLocalRandom.current().nextDouble() < rate) {
         res.setStatus(500);
         res.setHeader("X-Simulated-Failure", "true");
-        res.getWriter().write("Simulated failure");
+        res.setContentType("application/json");
+        res.getWriter().write("{\"error\":\"Simulated failure\"}");
         return;
       }
     }
