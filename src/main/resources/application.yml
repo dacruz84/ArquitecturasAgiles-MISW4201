@@ -20,6 +20,6 @@ management:
 
 reco:
   max-products: 10
-  failure-rate: 1.0
+  failure-rate: 0.5
   max-sweeps: 1000       
   max-improvements: 5000 
