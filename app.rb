@@ -2,6 +2,12 @@
 require "sinatra"
 require "json"
 
+require "prometheus/middleware/collector"
+require "prometheus/middleware/exporter"
+
+use Prometheus::Middleware::Collector
+use Prometheus::Middleware::Exporter, path: "/metrics"
+
 # 1) Cargar stub de Rails.root
 require_relative "./rails_stub"
 
