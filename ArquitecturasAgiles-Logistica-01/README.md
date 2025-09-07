@@ -10,4 +10,4 @@ Things you may want to cover:
 * app.rb -> llama a los servicios y entrega respuesta
 
 ## Probar: 
-curl -s -X POST http://localhost:3001/logistic/route -H 'Content-Type: application/json' -d '{"points":"P1, P3, P4, P6, P18, P5, P2, P11, P7, P10"}' | jq
+curl -s -X POST http://localhost:3001/route -H 'Content-Type: application/json' -d '{"points":"P1, P3, P4, P6, P18, P5, P2, P11, P7, P10"}' | jq
