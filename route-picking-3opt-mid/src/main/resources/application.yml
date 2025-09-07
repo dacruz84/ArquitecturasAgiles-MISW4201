@@ -1,0 +1,25 @@
+server:
+  port: ${PORT:8081}
+spring:
+  application:
+    name: route-picking-3opt-mid
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+    prometheus:
+        enabled: true
+  metrics:
+    tags:
+      application: route-picking-3opt-mid
+
+reco:
+  max-products: 10
+  failure-rate: 0.5
+  max-sweeps: 1000       
+  max-improvements: 5000 
