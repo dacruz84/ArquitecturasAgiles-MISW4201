@@ -1,0 +1,40 @@
+# Archivos de Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Archivos de pruebas
+test_*.py
+*_test.py
+
+# Archivos de desarrollo
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Documentación
+README.md
+*.md
+
+# Logs
+*.log
+
+# Archivos temporales
+*.tmp
