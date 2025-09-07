@@ -1,4 +1,4 @@
-Los proyectos d este repositorio contienen la unificciòn de los repositorios de cada integrante del grupo :
+Los proyectos de este repositorio contienen la unificciòn de los repositorios de cada integrante del grupo :
 
 https://github.com/NicolasInfanteUniandes96/ArquitecturasAgiles-Logistica-01.git
 
