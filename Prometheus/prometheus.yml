@@ -1,0 +1,20 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'service-voting'
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ['service-voting:9000']
+  - job_name: 'service-java'
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ['service-java:8081']
+  - job_name: 'service-python'
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['service-python:8082']
+  - job_name: 'service-ruby'
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['service-ruby:3001']
