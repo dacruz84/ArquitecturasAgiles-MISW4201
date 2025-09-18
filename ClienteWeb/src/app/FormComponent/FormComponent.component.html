@@ -1,0 +1,20 @@
+<div style="max-width:600px">
+  <label>
+    Valor:
+    <input [(ngModel)]="valor" placeholder="escribe algo..." style="width:70%" />
+  </label>
+
+  <div style="margin-top: 12px;">
+    <button (click)="onEnviar()" [disabled]="loading">Enviar</button>
+    <span *ngIf="loading"> procesando...</span>
+  </div>
+
+  <div style="margin-top: 12px; white-space: pre-wrap;">
+    <strong>Status:</strong>
+    <div>{{status}}</div>
+  </div>
+
+  <section style="margin-top:20px; font-size: 0.9em; color:#555">
+    <p><em>Nota:</em> este cliente calcula el hash del payload, solicita un token al backend y envía el payload (JSON) junto con el token.</p>
+  </section>
+</div>
