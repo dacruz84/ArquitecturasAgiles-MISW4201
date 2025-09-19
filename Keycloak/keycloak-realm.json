@@ -1,0 +1,49 @@
+{
+  "realm": "arquitectura",
+  "enabled": true,
+  "roles": {
+    "realm": [
+      { "name": "COMPRAS" },
+      { "name": "LOGISTICA" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "clienteweb",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "redirectUris": ["*"],
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true
+    },
+    {
+      "clientId": "arq-sec",
+      "secret": "nzh4zOsFbd7HLwrAUNKL5BFJIUN6A2Cw",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "redirectUris": ["*"],
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true
+    }
+  ],
+  "users": [
+    {
+      "username": "usuarioCompras",
+      "enabled": true,
+      "credentials": [
+        { "type": "password", "value": "compras123", "temporary": false }
+      ],
+      "realmRoles": ["COMPRAS"]
+    },
+    {
+      "username": "usuarioLogistica",
+      "enabled": true,
+      "credentials": [
+        { "type": "password", "value": "logistica123", "temporary": false }
+      ],
+      "realmRoles": ["LOGISTICA"]
+    }
+  ]
+}

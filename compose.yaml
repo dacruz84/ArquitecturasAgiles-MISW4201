@@ -24,7 +24,6 @@ services:
       retries: 3
       start_period: 10s
 
-    # ===== Límites efectivos en Docker Compose (no Swarm) =====
     cpus: "1"              # hasta 0.75 CPUs lógicos
     mem_limit: "512m"         # hard limit
     mem_reservation: "256m"   # soft reservation (útil para OOM/planificación)
@@ -111,7 +110,7 @@ services:
     container_name: clienteweb
     image: local/clienteweb:latest
     ports:
-      - "4200:80"
+      - "4201:8080"
     networks:
       - voting-net
     restart: unless-stopped
@@ -182,6 +181,9 @@ services:
       KEYCLOAK_ADMIN_PASSWORD: admin
       KC_HEALTH_ENABLED: "true"
       KC_METRICS_ENABLED: "true"
+      KEYCLOAK_IMPORT: /opt/keycloak/data/import/keycloak-realm.json
+    volumes:
+      - ./Keycloak/keycloak-realm.json:/opt/keycloak/data/import/keycloak-realm.json:ro
     ports:
       - "8080:8080"
     networks:
