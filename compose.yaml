@@ -158,3 +158,55 @@ services:
       - ./Grafana/datasource/datasource.yaml:/etc/grafana/provisioning/datasources/datasource.yaml:ro
       - ./Grafana/dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml:ro
       - ./Grafana/dashboard:/var/lib/grafana/dashboards:ro
+
+  service-keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    container_name: keycloak
+    command: >
+      start-dev
+      --http-port=8080
+      --hostname-strict=false
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: "true"
+      KC_METRICS_ENABLED: "true"
+    ports:
+      - "8080:8080"
+    networks:
+      - voting-net
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://keycloak:8080/health/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  service-gateway:
+    build:
+      context: ./Gateway          # <- ruta a tu app Sinatra
+    container_name: gateway
+    environment:
+      PORT: "3000"
+      KC_BASE: "http://localhost:8080" # url keycloack
+      KC_REALM: "arquitectura" # nombre del realm
+      OIDC_CLIENT_ID: "arq-sec"                  # id del cliente
+      OIDC_CLIENT_SECRET: "nzh4zOsFbd7HLwrAUNKL5BFJIUN6A2Cw"   # id del secret
+      VOTING_BASE: "http://localhost:9000/voting"
+
+    ports:
+      - "3009:3000"          # host:container (evitamos chocar con Grafana:3000)
+    networks:
+      - voting-net
+    depends_on:
+      service-voting:
+        condition: service_healthy
+      service-keycloak:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
