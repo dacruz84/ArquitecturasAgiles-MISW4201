@@ -104,6 +104,17 @@ services:
     cpus: "1.00"
     mem_limit: "512m"
     mem_reservation: "384m"
+  
+  clienteweb:
+    build:
+      context: ./ClienteWeb
+    container_name: clienteweb
+    image: local/clienteweb:latest
+    ports:
+      - "4200:80"
+    networks:
+      - voting-net
+    restart: unless-stopped
 
   prometheus:
     image: prom/prometheus:latest

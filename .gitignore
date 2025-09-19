@@ -1,0 +1,33 @@
+# Node modules
+ClienteWeb/node_modules/
+
+# Build output
+ClienteWeb/dist/
+ClienteWeb/.angular/
+
+# IDEs and editors
+ClienteWeb/.vscode/
+ClienteWeb/.idea/
+
+# Logs
+ClienteWeb/npm-debug.log*
+ClienteWeb/yarn-debug.log*
+ClienteWeb/yarn-error.log*
+
+# OS files
+ClienteWeb/.DS_Store
+ClienteWeb/Thumbs.db
+
+# Angular environment files (if any secrets)
+# ClienteWeb/src/environments/environment*.ts
+
+# Compiled output
+ClienteWeb/out-tsc/
+
+# Coverage
+ClienteWeb/coverage/
+
+# Misc
+ClienteWeb/.env
+ClienteWeb/.env.*
+
