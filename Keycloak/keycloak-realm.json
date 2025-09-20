@@ -13,37 +13,41 @@
       "enabled": true,
       "protocol": "openid-connect",
       "publicClient": true,
-      "redirectUris": ["*"],
+      "redirectUris": [
+        "http://localhost:4200/*",
+        "http://localhost:4201/*"
+      ],
+      "webOrigins": ["+"],
       "standardFlowEnabled": true,
-      "directAccessGrantsEnabled": true
-    },
-    {
-      "clientId": "arq-sec",
-      "secret": "nzh4zOsFbd7HLwrAUNKL5BFJIUN6A2Cw",
-      "enabled": true,
-      "protocol": "openid-connect",
-      "publicClient": false,
-      "redirectUris": ["*"],
-      "standardFlowEnabled": true,
-      "directAccessGrantsEnabled": true
+      "directAccessGrantsEnabled": false
     }
   ],
   "users": [
     {
       "username": "usuarioCompras",
       "enabled": true,
+      "firstName": "Compras",
+      "lastName": "User",
+      "email": "compras@example.com",
+      "emailVerified": true,
       "credentials": [
         { "type": "password", "value": "compras123", "temporary": false }
       ],
-      "realmRoles": ["COMPRAS"]
+      "realmRoles": ["COMPRAS"],
+      "requiredActions": []
     },
     {
       "username": "usuarioLogistica",
       "enabled": true,
+      "firstName": "Logistica",
+      "lastName": "User",
+      "email": "logistica@example.com",
+      "emailVerified": true,
       "credentials": [
         { "type": "password", "value": "logistica123", "temporary": false }
       ],
-      "realmRoles": ["LOGISTICA"]
+      "realmRoles": ["LOGISTICA"],
+      "requiredActions": []
     }
   ]
 }
