@@ -20,6 +20,17 @@
       "webOrigins": ["+"],
       "standardFlowEnabled": true,
       "directAccessGrantsEnabled": false
+    },
+    {
+      "clientId": "arq-sec",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "nzh4zOsFbd7HLwrAUNKL5BFJIUN6A2Cw",
+      "redirectUris": [],
+      "webOrigins": [],
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false
     }
   ],
   "users": [

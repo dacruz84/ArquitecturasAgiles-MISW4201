@@ -188,16 +188,10 @@ services:
       - "8080:8080"
     networks:
       - voting-net
-    healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://keycloak:8080/health/ready"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 20s
 
   service-gateway:
     build:
-      context: ./Gateway          # <- ruta a tu app Sinatra
+      context: ./Gateway
     container_name: gateway
     environment:
       PORT: "3000"
@@ -215,7 +209,7 @@ services:
       service-voting:
         condition: service_healthy
       service-keycloak:
-        condition: service_healthy
+        condition: service_started
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:3000/health"]

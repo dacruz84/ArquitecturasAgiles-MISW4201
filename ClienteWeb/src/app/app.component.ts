@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { KeycloakService } from './keycloak.service';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-root',
@@ -15,7 +17,11 @@ export class AppComponent {
   hashResult: string | null = null;
   isHashing = false;
 
-  constructor(private fb: FormBuilder, private kc: KeycloakService) {
+  sending = false;
+  sendResult: any = null;
+  sendError: string | null = null;
+
+  constructor(private fb: FormBuilder, private kc: KeycloakService, private http: HttpClient) {
     this.form = this.fb.group({
       payload: [
         'P1,P3,P4,P6,P18,P5,P2,P11,P7,P10',
@@ -51,17 +57,44 @@ export class AppComponent {
     return bytes.map(b => b.toString(16).padStart(2, '0')).join('');
   }
 
-  // Placeholder: luego usaremos esto para enviar al Gateway con token y hash
-  sendToGateway(): void {
+  async sendToGateway(): Promise<void> {
     if (!this.hashResult) {
       alert('Primero genera el hash.');
       return;
     }
-    // Aquí luego: llamar servicio Auth -> obtener token -> POST con payload + hash
-    console.log('Preparado para enviar:', {
+    if (!this.isLogistica()) {
+      alert('No tienes permiso (requiere rol LOGISTICA).');
+      return;
+    }
+    const token = this.kc.getToken();
+    if (!token) {
+      alert('Token no disponible – quizá la sesión expiró.');
+      return;
+    }
+
+    this.sending = true;
+    this.sendResult = null;
+    this.sendError = null;
+    const body = {
       payload: this.form.value.payload,
       hash: this.hashResult
+    };
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
     });
+    try {
+      const resp = await this.http.post(`${environment.gateway.baseUrl}/voting`, body, { headers }).toPromise();
+      this.sendResult = resp;
+    } catch (err) {
+      if (err instanceof HttpErrorResponse) {
+        this.sendError = `Error ${err.status}: ${err.message}`;
+      } else {
+        this.sendError = 'Error desconocido enviando al Gateway';
+      }
+    } finally {
+      this.sending = false;
+    }
   }
 
   

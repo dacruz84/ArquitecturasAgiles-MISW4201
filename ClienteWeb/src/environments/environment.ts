@@ -6,6 +6,7 @@ export const environment = {
     clientId: 'clienteweb'
   },
   gateway: {
-    baseUrl: 'http://gateway:3009'
+    // Para el navegador (desarrollo) usamos localhost; dentro de Docker la app Nginx usaría hostname "gateway".
+    baseUrl: 'http://localhost:3009'
   }
 };

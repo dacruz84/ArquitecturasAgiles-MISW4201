@@ -26,7 +26,21 @@
     <code>{{ hashResult }}</code>
   </div>
 
-  <button (click)="sendToGateway()" [disabled]="!hashResult">
-    Enviar al Gateway (pendiente de implementar)
-  </button>
+  <div *ngIf="isLogistica(); else noPermiso">
+    <button (click)="sendToGateway()" [disabled]="!hashResult || sending">
+      {{ sending ? 'Enviando...' : 'Enviar al Gateway' }}
+    </button>
+    <div *ngIf="sendResult" class="result-box">
+      <h4>Respuesta Gateway</h4>
+      <pre>{{ sendResult | json }}</pre>
+    </div>
+    <div *ngIf="sendError" class="error">
+      {{ sendError }}
+    </div>
+  </div>
+  <ng-template #noPermiso>
+    <p *ngIf="hashResult" style="color:#888;font-size:0.9rem;">
+      (Solo el rol LOGISTICA puede enviar el payload al backend)
+    </p>
+  </ng-template>
 </div>
