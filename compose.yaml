@@ -203,6 +203,9 @@ services:
       OIDC_CLIENT_ID: "arq-sec"                  # id del cliente
       OIDC_CLIENT_SECRET: "nzh4zOsFbd7HLwrAUNKL5BFJIUN6A2Cw"   # id del secret
       VOTING_BASE: "http://service-voting:9000"  # usar hostname interno y sin sufijo duplicado
+      HTTP_PROXY: "http://zap:8090"
+      HTTPS_PROXY: "http://zap:8090"
+      NO_PROXY: "localhost,127.0.0.1,keycloak,service-java,service-python,service-ruby,logistica-01,logistica-02,logistica-03"
 
     ports:
       - "3009:3000"          # host:container (evitamos chocar con Grafana:3000)
@@ -220,3 +223,16 @@ services:
       timeout: 3s
       retries: 5
       start_period: 10s
+
+  zap:
+    image: ghcr.io/zaproxy/zaproxy:stable
+    container_name: zap
+    command: zap.sh -daemon -host 0.0.0.0 -port 8090 -config api.disablekey=true -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true
+    ports:
+      - "8090:8090"
+    volumes:
+      - ./zap/scripts:/zap/scripts
+    networks:
+      - voting-net
+    restart: unless-stopped
+    
