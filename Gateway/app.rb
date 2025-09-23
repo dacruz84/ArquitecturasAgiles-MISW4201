@@ -1,7 +1,9 @@
 # app.rb
 require "sinatra"
 require "json"
+require "base64"
 require_relative "config/config"
+require 'logger'
 require_relative "helpers/cors"
 require_relative "services/jwt_service"
 require_relative "services/proxy_service"
@@ -9,10 +11,17 @@ require_relative "services/keycloak_service"
 
 set :bind, "0.0.0.0"
 set :port, 3000
+set :logging, true
 
 register CORS
 
 VOTING_PROXY = ProxyService.new(AppConfig::VOTING_BASE)
+BOOT_LOGGER = Logger.new($stdout)
+
+configure do
+  enable :logging
+  BOOT_LOGGER.info("[BOOT] Gateway iniciando con KC_BASE=#{AppConfig::KC_BASE} realm=#{AppConfig::REALM} introspect=#{AppConfig::INTROSPECT_URL}")
+end
 
 get "/health" do
   content_type :json
@@ -36,21 +45,47 @@ post "/login" do
 end
 
 before "/voting" do
+  # Permitir el preflight CORS (OPTIONS) sin exigir Authorization.
+  if request.request_method == 'OPTIONS'
+    logger.info("[PRE-FLIGHT] /voting OPTIONS desde #{request.env['HTTP_ORIGIN']} headers=#{request.env['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']}")
+    # El módulo CORS ya añadió los headers; respondemos vacio 204.
+    halt 204
+  end
+
   content_type :json
+  logger.info("[AUTH] Verificando token para #{request.request_method} /voting from origin=#{request.env['HTTP_ORIGIN']} auth=#{request.env['HTTP_AUTHORIZATION']&.slice(0,30)}...")
   begin
-    JwtService.verify!(
+    data = JwtService.verify!(
       request.env["HTTP_AUTHORIZATION"],
       introspect_url: AppConfig::INTROSPECT_URL,
       client_id:     AppConfig::OIDC_CLIENT_ID,
       client_secret: AppConfig::OIDC_CLIENT_SECRET
     )
+    logger.info("[AUTH] Token válido sub=#{data['sub']} active=#{data['active']} scope=#{data['scope']}")
+
+    # Decodificar el JWT sólo para extraer roles (sin volver a validar firma porque introspection ya dijo active=true).
+    token = request.env["HTTP_AUTHORIZATION"].split(" ").last
+    payload_segment = token.split(".")[1]
+    # Añadir padding si faltan '='
+    padding = (4 - payload_segment.length % 4) % 4
+    payload_segment += '=' * padding
+    jwt_payload = JSON.parse(Base64.urlsafe_decode64(payload_segment)) rescue {}
+    roles = jwt_payload.dig('realm_access','roles') || []
+    logger.info("[AUTHZ] Roles token=#{roles.join(',')}")
+    unless roles.include?('LOGISTICA')
+      logger.warn("[AUTHZ] Falta rol requerido LOGISTICA -> 403")
+      halt 403, { error: 'forbidden', detail: 'Missing role LOGISTICA' }.to_json
+    end
   rescue => e
+    logger.warn("[AUTH] Falló verificación: #{e.message}")
     halt 401, { error: e.message }.to_json
   end
 end
 
 post "/voting" do
+  logger.info("[PROXY] Reenviando petición al servicio Voting...")
   status_, headers_, body_ = VOTING_PROXY.forward!(request, "/voting")
+  logger.info("[PROXY] Respuesta upstream status=#{status_} content-type=#{headers_["content-type"] || headers_["Content-Type"]}")
   content_type headers_["content-type"] || headers_["Content-Type"] || "application/json"
   status status_
   body body_

@@ -176,7 +176,10 @@ services:
       start-dev
       --http-port=8080
       --hostname-strict=false
+      --hostname=localhost
       --import-realm
+    # Nota: hostname=localhost para que el issuer en los tokens coincida con el usado por el gateway
+    # y evitar que la introspección devuelva active=false por mismatch de host.
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
@@ -195,11 +198,11 @@ services:
     container_name: gateway
     environment:
       PORT: "3000"
-      KC_BASE: "http://localhost:8080" # url keycloack
+      KC_BASE: "http://keycloak:8080" # internal URL for Keycloak (inside docker network)
       KC_REALM: "arquitectura" # nombre del realm
       OIDC_CLIENT_ID: "arq-sec"                  # id del cliente
       OIDC_CLIENT_SECRET: "nzh4zOsFbd7HLwrAUNKL5BFJIUN6A2Cw"   # id del secret
-      VOTING_BASE: "http://localhost:9000/voting"
+      VOTING_BASE: "http://service-voting:9000"  # usar hostname interno y sin sufijo duplicado
 
     ports:
       - "3009:3000"          # host:container (evitamos chocar con Grafana:3000)

@@ -8,5 +8,6 @@ module AppConfig
   OIDC_CLIENT_SECRET = ENV.fetch("OIDC_CLIENT_SECRET", "nzh4zOsFbd7HLwrAUNKL5BFJIUN6A2Cw")
   INTROSPECT_URL = "#{ISSUER}/protocol/openid-connect/token/introspect"
 
-  VOTING_BASE = ENV.fetch("VOTING_BASE", "http://localhost:9000/voting")
+  # Base del servicio Voting (sin el sufijo /voting para que el proxy añada la ruta correctamente)
+  VOTING_BASE = ENV.fetch("VOTING_BASE", "http://service-voting:9000")
 end
