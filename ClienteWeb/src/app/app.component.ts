@@ -76,8 +76,8 @@ export class AppComponent {
     this.sendResult = null;
     this.sendError = null;
     const body = {
-      payload: this.form.value.payload,
-      hash: this.hashResult
+      items: this.form.value.payload,
+      integrityHash: this.hashResult
     };
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${token}`,
