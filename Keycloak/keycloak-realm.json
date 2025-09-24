@@ -29,8 +29,8 @@
       "secret": "nzh4zOsFbd7HLwrAUNKL5BFJIUN6A2Cw",
       "redirectUris": [],
       "webOrigins": [],
-      "standardFlowEnabled": false,
-      "directAccessGrantsEnabled": false
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true
     }
   ],
   "users": [
@@ -42,7 +42,7 @@
       "email": "compras@example.com",
       "emailVerified": true,
       "credentials": [
-        { "type": "password", "value": "compras123", "temporary": false }
+        { "type": "password", "value": "admin", "temporary": false }
       ],
       "realmRoles": ["COMPRAS"],
       "requiredActions": []
@@ -55,7 +55,7 @@
       "email": "logistica@example.com",
       "emailVerified": true,
       "credentials": [
-        { "type": "password", "value": "logistica123", "temporary": false }
+        { "type": "password", "value": "admin", "temporary": false }
       ],
       "realmRoles": ["LOGISTICA"],
       "requiredActions": []

@@ -186,7 +186,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(increase(http_server_requests_seconds_count{job=\"gateway\", uri=\"/voting\"}[$__range]))",
+          "expr": "sum(increase(http_server_requests_total{job=\"gateway\", path=\"/voting\"}[$__range]))",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
@@ -255,7 +255,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(increase(http_server_requests_seconds_count{job=\"gateway\", uri=\"/login\"}[$__range]))",
+          "expr": "sum(increase(http_server_requests_total{job=\"gateway\", path=\"/login\", method=\"post\"}[$__range]))",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
@@ -323,7 +323,7 @@
             "uid": "prometheus-main"
           },
           "editorMode": "code",
-          "expr": "100 * sum(rate(http_server_requests_seconds_count{job=\"gateway\", uri=\"/voting\", outcome=\"SUCCESS\"}[$__rate_interval])) / sum(rate(http_server_requests_seconds_count{job=\"gateway\", uri=\"/voting\"}[$__rate_interval]))",
+          "expr": "100 * sum(rate(http_server_requests_total{job=\"gateway\", path=\"/voting\", code=\"200\"}[$__rate_interval])) / sum(rate(http_server_requests_total{job=\"gateway\", path=\"/voting\"}[$__rate_interval]))",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
@@ -419,7 +419,7 @@
             "uid": "prometheus-main"
           },
           "editorMode": "code",
-          "expr": "sum(rate(http_server_requests_seconds_sum{job=\"gateway\", uri=\"/voting\", outcome=\"SUCCESS\"}[$__rate_interval]))/sum(rate(http_server_requests_seconds_count{job=\"gateway\", uri=\"/voting\", outcome=\"SUCCESS\"}[$__rate_interval]))",
+          "expr": "sum(rate(http_server_request_duration_seconds_sum{job=\"gateway\", path=\"/voting\"}[$__rate_interval]))/sum(rate(http_server_request_duration_seconds_count{job=\"gateway\", path=\"/voting\"}[$__rate_interval]))",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
@@ -528,7 +528,7 @@
             "uid": "prometheus-main"
           },
           "editorMode": "code",
-          "expr": "rate(http_server_requests_seconds_count{job=\"gateway\",uri=\"/voting\" }[$__rate_interval])",
+          "expr": "rate(http_server_requests_total{job=\"gateway\", path=\"/voting\"}[$__rate_interval])",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
@@ -536,6 +536,104 @@
         }
       ],
       "title": "Operaciones por Segundo Gateway",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-main"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "stepBefore",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 8,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 10,
+        "y": 7
+      },
+      "id": 39,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-main"
+          },
+          "editorMode": "code",
+          "expr": "sum(increase(http_server_requests_total{job=\"gateway\", code=~\"4..\"}[30s]))",
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Fallos de Autenticación JWT",
       "type": "timeseries"
     },
     {
@@ -1936,8 +2034,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -2045,8 +2142,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -2154,8 +2250,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -2250,8 +2345,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -2359,8 +2453,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -2455,8 +2548,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -2554,8 +2646,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -2679,8 +2770,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -2755,20 +2845,20 @@
       "type": "timeseries"
     }
   ],
-  "refresh": "5s",
+  "refresh": false,
   "schemaVersion": 39,
   "tags": [],
   "templating": {
     "list": []
   },
   "time": {
-    "from": "now-5m",
-    "to": "now"
+    "from": "2025-09-24T12:25:37.670Z",
+    "to": "2025-09-24T12:35:37.670Z"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Technical",
   "uid": "ddc8d4f2-11cd-49d7-a645-05432d7601b9",
-  "version": 7,
+  "version": 1,
   "weekStart": ""
 }

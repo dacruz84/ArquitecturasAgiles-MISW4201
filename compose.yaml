@@ -197,7 +197,7 @@ services:
       context: ./Gateway
     container_name: gateway
     environment:
-      PORT: "3000"
+      PORT: "3009"
       KC_BASE: "http://keycloak:8080" # internal URL for Keycloak (inside docker network)
       KC_REALM: "arquitectura" # nombre del realm
       OIDC_CLIENT_ID: "arq-sec"                  # id del cliente
@@ -208,7 +208,8 @@ services:
       NO_PROXY: "localhost,127.0.0.1,keycloak,service-java,service-python,service-ruby,logistica-01,logistica-02,logistica-03"
 
     ports:
-      - "3009:3000"          # host:container (evitamos chocar con Grafana:3000)
+      - "3009:3009"
+      - "3010:3010"  # Puerto separado para métricas
     networks:
       - voting-net
     depends_on:
@@ -218,7 +219,7 @@ services:
         condition: service_started
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://localhost:3000/health"]
+      test: ["CMD", "curl", "-fsS", "http://localhost:3009/health"]
       interval: 10s
       timeout: 3s
       retries: 5

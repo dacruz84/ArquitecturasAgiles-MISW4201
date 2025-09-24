@@ -15,10 +15,57 @@ require "prometheus/middleware/collector"
 require "prometheus/middleware/exporter"
 
 use Prometheus::Middleware::Collector
-use Prometheus::Middleware::Exporter, path: "/metrics"
+
+# Servidor HTTP separado para métricas en puerto 3010
+Thread.new do
+  require 'socket'
+  server = TCPServer.new('0.0.0.0', 3010)
+  puts "[METRICS] Servidor de métricas iniciado en puerto 3010"
+  
+  loop do
+    begin
+      client = server.accept
+      puts "[METRICS] Conexión recibida"
+      
+      # Leer solo primera línea (GET /metrics HTTP/1.1)
+      first_line = client.gets
+      puts "[METRICS] Request: #{first_line&.strip}"
+      
+      # Leer resto de headers hasta línea vacía
+      while (line = client.gets) && line.strip != ""
+        # Solo consumir headers, no procesarlos
+      end
+      
+      if first_line&.include?('GET /metrics')
+        registry = Prometheus::Client.registry
+        body = Prometheus::Client::Formats::Text.marshal(registry)
+        
+        response = "HTTP/1.1 200 OK\r\n"
+        response << "Content-Type: text/plain; version=0.0.4; charset=utf-8\r\n"
+        response << "Content-Length: #{body.bytesize}\r\n"
+        response << "Connection: close\r\n"
+        response << "\r\n"
+        response << body
+        
+        client.write(response)
+        puts "[METRICS] Respuesta enviada (#{body.bytesize} bytes)"
+      else
+        client.write("HTTP/1.1 404 Not Found\r\nConnection: close\r\n\r\n")
+        puts "[METRICS] Respuesta 404 enviada"
+      end
+      
+    rescue => e
+      puts "[METRICS] Error: #{e.message}"
+    ensure
+      client&.close
+      puts "[METRICS] Conexión cerrada"
+    end
+  end
+end
+
 
 set :bind, "0.0.0.0"
-set :port, 3000
+set :port, 3009
 set :logging, true
 
 register CORS
@@ -98,3 +145,4 @@ post "/voting" do
   status status_
   body body_
 end
+
