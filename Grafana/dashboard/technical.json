@@ -22,12 +22,529 @@
   "liveNow": false,
   "panels": [
     {
-      "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
         "y": 0
+      },
+      "id": 32,
+      "title": "Gateway",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-main"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 5,
+        "x": 0,
+        "y": 1
+      },
+      "id": 33,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-main"
+          },
+          "editorMode": "code",
+          "expr": "up{job=\"gateway\"}",
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Disponibilidad Gateway",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-main"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 5,
+        "y": 1
+      },
+      "id": 34,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "10.2.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-main"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum(increase(http_server_requests_seconds_count{job=\"gateway\", uri=\"/voting\"}[$__range]))",
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Gateway - Conteo Peticiones Voting",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-main"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 10,
+        "y": 1
+      },
+      "id": 35,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "10.2.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-main"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum(increase(http_server_requests_seconds_count{job=\"gateway\", uri=\"/login\"}[$__range]))",
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Gateway - Conteo Peticiones Login",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-main"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 5,
+        "x": 15,
+        "y": 1
+      },
+      "id": 36,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "10.2.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-main"
+          },
+          "editorMode": "code",
+          "expr": "100 * sum(rate(http_server_requests_seconds_count{job=\"gateway\", uri=\"/voting\", outcome=\"SUCCESS\"}[$__rate_interval])) / sum(rate(http_server_requests_seconds_count{job=\"gateway\", uri=\"/voting\"}[$__rate_interval]))",
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Porcentaje Exito Gateway",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-main"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 5,
+        "x": 5,
+        "y": 6
+      },
+      "id": 38,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-main"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(http_server_requests_seconds_sum{job=\"gateway\", uri=\"/voting\", outcome=\"SUCCESS\"}[$__rate_interval]))/sum(rate(http_server_requests_seconds_count{job=\"gateway\", uri=\"/voting\", outcome=\"SUCCESS\"}[$__rate_interval]))",
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-main"
+          },
+          "editorMode": "code",
+          "expr": "max(http_server_requests_seconds_max{job=\"service-voting\", uri=\"/voting\", outcome=\"SUCCESS\"})",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Latencias Gateway",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-main"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 5,
+        "x": 0,
+        "y": 7
+      },
+      "id": 37,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-main"
+          },
+          "editorMode": "code",
+          "expr": "rate(http_server_requests_seconds_count{job=\"gateway\",uri=\"/voting\" }[$__rate_interval])",
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Operaciones por Segundo Gateway",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 15
       },
       "id": 3,
       "panels": [],
@@ -97,7 +614,7 @@
         "h": 6,
         "w": 5,
         "x": 0,
-        "y": 1
+        "y": 16
       },
       "id": 14,
       "options": {
@@ -192,7 +709,7 @@
         "h": 6,
         "w": 5,
         "x": 5,
-        "y": 1
+        "y": 16
       },
       "id": 15,
       "options": {
@@ -287,7 +804,7 @@
         "h": 6,
         "w": 5,
         "x": 10,
-        "y": 1
+        "y": 16
       },
       "id": 16,
       "options": {
@@ -382,7 +899,7 @@
         "h": 6,
         "w": 5,
         "x": 15,
-        "y": 1
+        "y": 16
       },
       "id": 17,
       "options": {
@@ -420,7 +937,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 7
+        "y": 22
       },
       "id": 4,
       "panels": [],
@@ -459,7 +976,7 @@
         "h": 5,
         "w": 5,
         "x": 0,
-        "y": 8
+        "y": 23
       },
       "id": 20,
       "options": {
@@ -528,7 +1045,7 @@
         "h": 5,
         "w": 5,
         "x": 5,
-        "y": 8
+        "y": 23
       },
       "id": 22,
       "options": {
@@ -597,7 +1114,7 @@
         "h": 5,
         "w": 5,
         "x": 10,
-        "y": 8
+        "y": 23
       },
       "id": 23,
       "options": {
@@ -666,7 +1183,7 @@
         "h": 5,
         "w": 5,
         "x": 15,
-        "y": 8
+        "y": 23
       },
       "id": 24,
       "options": {
@@ -735,7 +1252,7 @@
         "h": 6,
         "w": 5,
         "x": 0,
-        "y": 13
+        "y": 28
       },
       "id": 21,
       "options": {
@@ -803,7 +1320,7 @@
         "h": 6,
         "w": 5,
         "x": 5,
-        "y": 13
+        "y": 28
       },
       "id": 25,
       "options": {
@@ -871,7 +1388,7 @@
         "h": 6,
         "w": 5,
         "x": 10,
-        "y": 13
+        "y": 28
       },
       "id": 28,
       "options": {
@@ -939,7 +1456,7 @@
         "h": 6,
         "w": 5,
         "x": 15,
-        "y": 13
+        "y": 28
       },
       "id": 29,
       "options": {
@@ -1039,7 +1556,7 @@
         "h": 8,
         "w": 5,
         "x": 0,
-        "y": 19
+        "y": 34
       },
       "id": 5,
       "options": {
@@ -1135,7 +1652,7 @@
         "h": 8,
         "w": 5,
         "x": 5,
-        "y": 19
+        "y": 34
       },
       "id": 11,
       "options": {
@@ -1231,7 +1748,7 @@
         "h": 8,
         "w": 5,
         "x": 10,
-        "y": 19
+        "y": 34
       },
       "id": 12,
       "options": {
@@ -1327,7 +1844,7 @@
         "h": 8,
         "w": 5,
         "x": 15,
-        "y": 19
+        "y": 34
       },
       "id": 18,
       "options": {
@@ -1365,7 +1882,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 27
+        "y": 42
       },
       "id": 26,
       "panels": [],
@@ -1436,7 +1953,7 @@
         "h": 8,
         "w": 5,
         "x": 0,
-        "y": 28
+        "y": 43
       },
       "id": 6,
       "options": {
@@ -1545,7 +2062,7 @@
         "h": 8,
         "w": 5,
         "x": 5,
-        "y": 28
+        "y": 43
       },
       "id": 10,
       "options": {
@@ -1654,7 +2171,7 @@
         "h": 8,
         "w": 5,
         "x": 10,
-        "y": 28
+        "y": 43
       },
       "id": 13,
       "options": {
@@ -1750,7 +2267,7 @@
         "h": 8,
         "w": 5,
         "x": 15,
-        "y": 28
+        "y": 43
       },
       "id": 19,
       "options": {
@@ -1788,7 +2305,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 36
+        "y": 51
       },
       "id": 27,
       "panels": [],
@@ -1859,7 +2376,7 @@
         "h": 8,
         "w": 5,
         "x": 0,
-        "y": 37
+        "y": 52
       },
       "id": 7,
       "options": {
@@ -1955,7 +2472,7 @@
         "h": 8,
         "w": 5,
         "x": 5,
-        "y": 37
+        "y": 52
       },
       "id": 30,
       "options": {
@@ -2054,7 +2571,7 @@
         "h": 9,
         "w": 5,
         "x": 0,
-        "y": 45
+        "y": 60
       },
       "id": 8,
       "options": {
@@ -2179,7 +2696,7 @@
         "h": 9,
         "w": 5,
         "x": 5,
-        "y": 45
+        "y": 60
       },
       "id": 31,
       "options": {
@@ -2252,6 +2769,6 @@
   "timezone": "",
   "title": "Technical",
   "uid": "ddc8d4f2-11cd-49d7-a645-05432d7601b9",
-  "version": 1,
+  "version": 7,
   "weekStart": ""
 }

@@ -9,6 +9,14 @@ require_relative "services/jwt_service"
 require_relative "services/proxy_service"
 require_relative "services/keycloak_service"
 
+
+
+require "prometheus/middleware/collector"
+require "prometheus/middleware/exporter"
+
+use Prometheus::Middleware::Collector
+use Prometheus::Middleware::Exporter, path: "/metrics"
+
 set :bind, "0.0.0.0"
 set :port, 3000
 set :logging, true
