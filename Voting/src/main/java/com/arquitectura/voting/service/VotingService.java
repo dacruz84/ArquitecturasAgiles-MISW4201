@@ -41,6 +41,7 @@ public class VotingService {
     }
 
     public Mono<VotingResponse> processVote(String items) {
+        log.info("Iniciando proceso de votación con items: {}", items);
         Flux<String> responses = Flux.merge(
                 callService(service1Url, items),
                 callService(service2Url, items),
@@ -78,11 +79,16 @@ public class VotingService {
     }
 
     private Mono<String> callService(String url, String items) {
+        log.info("Llamando servicio: {} con request: {}", url, items);
         return webClient.post()
                 .uri(url)
                 .body(BodyInserters.fromValue(Map.of("items", items)))
                 .retrieve()
                 .bodyToMono(String.class)
-                .onErrorResume(e -> Mono.just("error"));
+                .doOnNext(response -> log.info("Respuesta recibida de {}: {}", url, response))
+                .onErrorResume(e -> {
+                    log.error("Error al llamar a {}: {}", url, e.getMessage());
+                    return Mono.just("error");
+                });
     }
 }
