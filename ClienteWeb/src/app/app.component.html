@@ -1,0 +1,46 @@
+<div class="container">
+  <h1>{{ title }} - Experimento de Integridad</h1>
+
+  <div class="session-bar">
+    <span>Usuario: {{ username || '...' }}</span>
+    <span *ngIf="isCompras()">Rol: COMPRAS</span>
+    <span *ngIf="isLogistica()">Rol: LOGISTICA</span>
+    <button (click)="logout()">Logout</button>
+  </div>
+  <hr>
+
+  <form [formGroup]="form" (ngSubmit)="generateHash()">
+    <label for="payload">Payload (lista de productos)</label>
+    <textarea id="payload" formControlName="payload" rows="4"></textarea>
+    <div class="error" *ngIf="form.get('payload')?.invalid && form.get('payload')?.touched">
+      El payload es obligatorio.
+    </div>
+
+    <button type="submit" [disabled]="isHashing">
+      {{ isHashing ? 'Generando...' : 'Generar Hash' }}
+    </button>
+  </form>
+
+  <div class="hash-box" *ngIf="hashResult">
+    <h3>Hash SHA-256</h3>
+    <code>{{ hashResult }}</code>
+  </div>
+
+  <div *ngIf="isLogistica(); else noPermiso">
+    <button (click)="sendToGateway()" [disabled]="!hashResult || sending">
+      {{ sending ? 'Enviando...' : 'Enviar al Gateway' }}
+    </button>
+    <div *ngIf="sendResult" class="result-box">
+      <h4>Respuesta Gateway</h4>
+      <pre>{{ sendResult | json }}</pre>
+    </div>
+    <div *ngIf="sendError" class="error">
+      {{ sendError }}
+    </div>
+  </div>
+  <ng-template #noPermiso>
+    <p *ngIf="hashResult" style="color:#888;font-size:0.9rem;">
+      (Solo el rol LOGISTICA puede enviar el payload al backend)
+    </p>
+  </ng-template>
+</div>

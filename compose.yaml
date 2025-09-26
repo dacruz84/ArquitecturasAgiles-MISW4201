@@ -7,7 +7,7 @@ networks:
 services:
   service-java:
     build:
-      context: ./route-picking-3opt-mid
+      context: ./Logistica-03
     container_name: service-java
     image: local/service-java:latest
     environment:
@@ -24,14 +24,13 @@ services:
       retries: 3
       start_period: 10s
 
-    # ===== Límites efectivos en Docker Compose (no Swarm) =====
     cpus: "1"              # hasta 0.75 CPUs lógicos
     mem_limit: "512m"         # hard limit
     mem_reservation: "256m"   # soft reservation (útil para OOM/planificación)
 
   service-python:
     build:
-      context: ./ArquitecturasAgiles-Logistica-02
+      context: ./Logistica-02
     container_name: service-python
     image: local/service-python:latest
     environment:
@@ -54,7 +53,7 @@ services:
 
   service-ruby:
     build:
-      context: ./ArquitecturasAgiles-Logistica-01
+      context: ./Logistica-01
     container_name: service-ruby
     image: local/service-ruby:latest
     environment:
@@ -77,7 +76,7 @@ services:
   
   service-voting:
     build:
-      context: ./ArquitecturasAgiles-Voting
+      context: ./Voting
     container_name: service-voting
     image: local/service-voting:latest
     environment:
@@ -104,6 +103,17 @@ services:
     cpus: "1.00"
     mem_limit: "512m"
     mem_reservation: "384m"
+  
+  clienteweb:
+    build:
+      context: ./ClienteWeb
+    container_name: clienteweb
+    image: local/clienteweb:latest
+    ports:
+      - "4201:8080"
+    networks:
+      - voting-net
+    restart: unless-stopped
 
   prometheus:
     image: prom/prometheus:latest
@@ -158,3 +168,72 @@ services:
       - ./Grafana/datasource/datasource.yaml:/etc/grafana/provisioning/datasources/datasource.yaml:ro
       - ./Grafana/dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml:ro
       - ./Grafana/dashboard:/var/lib/grafana/dashboards:ro
+
+  service-keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    container_name: keycloak
+    command: >
+      start-dev
+      --http-port=8080
+      --hostname-strict=false
+      --hostname=localhost
+      --import-realm
+    # Nota: hostname=localhost para que el issuer en los tokens coincida con el usado por el gateway
+    # y evitar que la introspección devuelva active=false por mismatch de host.
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: "true"
+      KC_METRICS_ENABLED: "true"
+    volumes:
+      - ./Keycloak/keycloak-realm.json:/opt/keycloak/data/import/keycloak-realm.json:ro
+    ports:
+      - "8080:8080"
+    networks:
+      - voting-net
+
+  service-gateway:
+    build:
+      context: ./Gateway
+    container_name: gateway
+    environment:
+      PORT: "3009"
+      KC_BASE: "http://keycloak:8080" # internal URL for Keycloak (inside docker network)
+      KC_REALM: "arquitectura" # nombre del realm
+      OIDC_CLIENT_ID: "arq-sec"                  # id del cliente
+      OIDC_CLIENT_SECRET: "nzh4zOsFbd7HLwrAUNKL5BFJIUN6A2Cw"   # id del secret
+      VOTING_BASE: "http://service-voting:9000"  # usar hostname interno y sin sufijo duplicado
+      HTTP_PROXY: "http://zap:8090"
+      HTTPS_PROXY: "http://zap:8090"
+      NO_PROXY: "localhost,127.0.0.1,keycloak,service-java,service-python,service-ruby,logistica-01,logistica-02,logistica-03"
+
+    ports:
+      - "3009:3009"
+      - "3010:3010"  # Puerto separado para métricas
+    networks:
+      - voting-net
+    depends_on:
+      service-voting:
+        condition: service_healthy
+      service-keycloak:
+        condition: service_started
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:3009/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+  zap:
+    image: ghcr.io/zaproxy/zaproxy:stable
+    container_name: zap
+    command: zap.sh -daemon -host 0.0.0.0 -port 8090 -config api.disablekey=true -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true
+    ports:
+      - "8090:8090"
+    volumes:
+      - ./zap/scripts:/zap/scripts
+    networks:
+      - voting-net
+    restart: unless-stopped
+    

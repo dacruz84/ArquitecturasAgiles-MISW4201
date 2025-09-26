@@ -63,5 +63,42 @@ Eso lo debe llevar a una página donde podrá ver el comportamiento de cada micr
 
 De las misma manera si quiere revisar los logs de cada microservicio, puede dirigirse a este [link](http://localhost:3000/explore?schemaVersion=1&panes=%7B%22_aW%22:%7B%22datasource%22:%22loki-main%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22expr%22:%22%7Bjob%3D%5C%22service-voting%5C%22%7D%20%7C%3D%20%60%60%22,%22queryType%22:%22range%22,%22datasource%22:%7B%22type%22:%22loki%22,%22uid%22:%22loki-main%22%7D,%22editorMode%22:%22builder%22%7D%5D,%22range%22:%7B%22from%22:%22now-5m%22,%22to%22:%22now%22%7D%7D%7D&orgId=1).
 
+# Ejecutar ataque con Zap para modificar el hash
+
+Se incluye un contenedor OWASP ZAP que actúa como proxy para service-voting. El objetivo es simular adulteración del campo integrityHash y verificar que el PEP in-app lo detecta y reacciona.
+
+Los scripts de manipulación de mensajes se encuentran en la carpeta zap/scripts
+
+Para cargar el script:
+
+curl "http://localhost:8090/JSON/script/action/load/?scriptName=tamper-hash&scriptType=httpsender&scriptEngine=ECMAScript%20:%20Graal.js&fileName=/zap/scripts/tamper-hash.js"
+
+Para habilitar el script principal:
+
+curl "http://localhost:8090/JSON/script/action/enable/?scriptName=tamper-hash"
+
+Para comprobar que el script se habilitó correctamente:
+
+"http://localhost:8090/JSON/script/view/listScripts/"
+
+Despues de generar el hash en el frontend ClienteWeb y enviarlo al gateway, se puede consultar el log de zap para comprobar que el mensaje fue interceptado mediante el comando:
+
+docker logs zap --tail 200
+
+o se puede ver el log en el contenedor en el docker desktop  deberia salir algo como:
+
+DEBUG body before: {"items":"P1,P3,P4,P6,P18,P5,P2,P11,P7,P10","integrityHash":"1e78f3a879cfcb6df9627abdffa05c21480385da2a2845697f121264782d4201"}
+
+DEBUG body after:  {"items":"P1,P3,P4,P6,P18,P5,P2,P11,P7,P10","integrityHash":"TAMPERED_HASH_TEST"}
+
+Para efectos de este experimento para cada request hay que habilitar el script primero.
+
+
+
+
+
+
+
+
 
 
